@@ -1,1 +1,204 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EDRO | Ordo™ — Simulador de Crédito Corporativo</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="container" style="padding-top:0; padding-bottom:0; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+      <div>
+        <h1 class="brand-title">EDRO | Ordo™ — Simulador de Crédito Corporativo</h1>
+        <p class="brand-subtitle">
+          Project Finance / Corporate Lending como projeto: VPL, TIR, Payback Descontado e risco via Monte Carlo.
+        </p>
+      </div>
+      <a class="btn" href="index.html" style="max-width:220px;">← Voltar ao Portal</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h2>Configuração da Simulação</h2>
+      <p>
+        Este módulo demonstra a lógica central do Ordo™: <span class="highlight">crédito como alocação de capital</span>,
+        com retorno e risco quantificados. O MVP utiliza simplificações explícitas e auditáveis.
+      </p>
+    </section>
+
+    <section class="grid" style="margin-top:16px;">
+      <article class="card" style="grid-column: span 6;">
+        <span class="badge active">Parâmetros do Crédito</span>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px;">
+          <label>
+            <div style="font-size:12.5px; color: rgba(255,255,255,0.78); margin-bottom:6px;">Valor do crédito (R$)</div>
+            <input id="principal" type="number" value="10000000" min="0" step="1000"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.18); color:#fff;">
+          </label>
+
+          <label>
+            <div style="font-size:12.5px; color: rgba(255,255,255,0.78); margin-bottom:6px;">Prazo (meses)</div>
+            <input id="termMonths" type="number" value="60" min="1" step="1"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.18); color:#fff;">
+          </label>
+
+          <label>
+            <div style="font-size:12.5px; color: rgba(255,255,255,0.78); margin-bottom:6px;">Taxa de juros (% a.a.)</div>
+            <input id="rateAnnual" type="number" value="14" min="0" step="0.1"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.18); color:#fff;">
+          </label>
+
+          <label>
+            <div style="font-size:12.5px; color: rgba(255,255,255,0.78); margin-bottom:6px;">Sistema de amortização</div>
+            <select id="amortType"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.18); color:#fff;">
+              <option value="PRICE">PRICE (parcela constante)</option>
+              <option value="SAC">SAC (amortização constante)</option>
+            </select>
+          </label>
+
+          <label>
+            <div style="font-size:12.5px; color: rgba(255,255,255,0.78); margin-bottom:6px;">Carência (meses)</div>
+            <input id="graceMonths" type="number" value="6" min="0" step="1"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.18); color:#fff;">
+          </label>
+
+          <label>
+            <div style="font-size:12.5px; color: rgba(255,255,255,0.78); margin-bottom:6px;">Custo de capital (% a.a.)</div>
+            <input id="discountAnnual" type="number" value="12" min="0" step="0.1"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.18); color:#fff;">
+          </label>
+        </div>
+
+        <div style="margin-top:14px; color: rgba(255,255,255,0.72); font-size:12.5px; line-height:1.4;">
+          <strong>Observação (MVP):</strong> a carência aplica “juros-only” (pagamento de juros; amortização inicia após a carência).
+        </div>
+      </article>
+
+      <article class="card" style="grid-column: span 6;">
+        <span class="badge active">Parâmetros de Risco (Monte Carlo)</span>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px;">
+          <label>
+            <div style="font-size:12.5px; color: rgba(255,255,255,0.78); margin-bottom:6px;">Prob. de default (% a.a.)</div>
+            <input id="pdAnnual" type="number" value="3.0" min="0" step="0.1"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.18); color:#fff;">
+          </label>
+
+          <label>
+            <div style="font-size:12.5px; color: rgba(255,255,255,0.78); margin-bottom:6px;">LGD (% perda no default)</div>
+            <input id="lgd" type="number" value="45" min="0" max="100" step="1"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.18); color:#fff;">
+          </label>
+
+          <label>
+            <div style="font-size:12.5px; color: rgba(255,255,255,0.78); margin-bottom:6px;">Prob. de atraso por parcela (%)</div>
+            <input id="delayProb" type="number" value="5" min="0" max="100" step="0.5"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.18); color:#fff;">
+          </label>
+
+          <label>
+            <div style="font-size:12.5px; color: rgba(255,255,255,0.78); margin-bottom:6px;">Atraso (meses)</div>
+            <input id="delayMonths" type="number" value="1" min="0" step="1"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.18); color:#fff;">
+          </label>
+
+          <label>
+            <div style="font-size:12.5px; color: rgba(255,255,255,0.78); margin-bottom:6px;">Iterações Monte Carlo</div>
+            <input id="iterations" type="number" value="5000" min="100" step="100"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.18); color:#fff;">
+          </label>
+
+          <label>
+            <div style="font-size:12.5px; color: rgba(255,255,255,0.78); margin-bottom:6px;">Seed (opcional)</div>
+            <input id="seed" type="number" placeholder="ex.: 12345" min="0" step="1"
+              style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.18); color:#fff;">
+          </label>
+        </div>
+
+        <div style="margin-top:14px;">
+          <button id="runBtn" class="btn primary">Rodar Simulação (VPL • TIR • Payback • Monte Carlo)</button>
+        </div>
+
+        <div id="status" style="margin-top:12px; color: rgba(255,255,255,0.78); font-size:12.5px;"></div>
+      </article>
+
+      <article class="card" style="grid-column: span 12;">
+        <span class="badge active">Resultados</span>
+
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-top:12px;">
+          <div class="card" style="background: rgba(255,255,255,0.04); box-shadow:none; border-radius:14px;">
+            <h3>VPL (Base)</h3>
+            <p id="npvBase" style="font-size:18px; margin:0; font-weight:800;">—</p>
+          </div>
+          <div class="card" style="background: rgba(255,255,255,0.04); box-shadow:none; border-radius:14px;">
+            <h3>TIR (Base)</h3>
+            <p id="irrBase" style="font-size:18px; margin:0; font-weight:800;">—</p>
+          </div>
+          <div class="card" style="background: rgba(255,255,255,0.04); box-shadow:none; border-radius:14px;">
+            <h3>Payback Desc. (Base)</h3>
+            <p id="dpbBase" style="font-size:18px; margin:0; font-weight:800;">—</p>
+          </div>
+          <div class="card" style="background: rgba(255,255,255,0.04); box-shadow:none; border-radius:14px;">
+            <h3>Prob(VPL &lt; 0)</h3>
+            <p id="pNeg" style="font-size:18px; margin:0; font-weight:800;">—</p>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-top:12px;">
+          <div class="card" style="background: rgba(255,255,255,0.04); box-shadow:none; border-radius:14px;">
+            <h3>VPL P5</h3>
+            <p id="p5" style="font-size:18px; margin:0; font-weight:800;">—</p>
+          </div>
+          <div class="card" style="background: rgba(255,255,255,0.04); box-shadow:none; border-radius:14px;">
+            <h3>VPL P50</h3>
+            <p id="p50" style="font-size:18px; margin:0; font-weight:800;">—</p>
+          </div>
+          <div class="card" style="background: rgba(255,255,255,0.04); box-shadow:none; border-radius:14px;">
+            <h3>VPL P95</h3>
+            <p id="p95" style="font-size:18px; margin:0; font-weight:800;">—</p>
+          </div>
+        </div>
+
+        <div style="margin-top:14px; display:grid; grid-template-columns: 1.2fr 0.8fr; gap:14px; align-items:start;">
+          <div>
+            <h3 style="margin: 6px 0 10px;">Distribuição do VPL (Monte Carlo)</h3>
+            <canvas id="hist" width="980" height="280"
+              style="width:100%; border-radius:14px; border:1px solid rgba(255,255,255,0.14); background: rgba(0,0,0,0.18);"></canvas>
+            <div style="margin-top:8px; color: rgba(255,255,255,0.70); font-size:12.5px;">
+              Dica: aumente iterações para estabilizar percentis. O MVP usa modelos simplificados e auditáveis.
+            </div>
+          </div>
+
+          <div>
+            <h3 style="margin: 6px 0 10px;">Notas de Governança (MVP)</h3>
+            <div style="padding:12px; border:1px solid rgba(255,255,255,0.14); border-radius:14px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.78); line-height:1.45; font-size:12.8px;">
+              <ul style="margin:0; padding-left:18px;">
+                <li>Sem dados reais: parâmetros são inseridos pelo usuário.</li>
+                <li>Default modelado por probabilidade mensal derivada do PD anual.</li>
+                <li>LGD aplicada sobre saldo devedor no evento de default; recuperação ocorre no mês do default (simplificação).</li>
+                <li>Atraso desloca o fluxo em <em>k</em> meses (se houver espaço no horizonte).</li>
+              </ul>
+            </div>
+            <div style="margin-top:10px;">
+              <a class="btn" href="sobre.html">Sobre este MVP</a>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <p class="footer">
+      EDRO — Excelência Organizacional por meio da Ciência da Decisão • MVP demonstrativo • v0.1
+    </p>
+  </main>
+
+  <script src="assets/js/engine.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
 
