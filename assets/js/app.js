@@ -76,3 +76,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+document.addEventListener("DOMContentLoaded", () => {
+  const go = document.getElementById("goCredit");
+  if (go) {
+    go.addEventListener("click", () => {
+      window.location.href = "./credito.html?v=3";
+    });
+  }
+});
